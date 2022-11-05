@@ -88,21 +88,15 @@ def ppmi(C, verbose=False, eps=1e-8):
     return M
 
 
-class MatMul:
-    def __init__(self, W):
-        self.params = [W]
-        self.grads = [np.zeros_like(W)]
-        self.x = None
+def create_context_target(corpus, window_size=1):
+    target = corpus[window_size:-window_size]
+    contexts = []
 
-    def forward(self, x):
-        W, = self.params
-        out = np.dot(x, W)
-        self.x = x
-        return out
-
-    def backward(self, dout):
-        W, = self.params
-        dx = np.dot(dout, W.T)
-        dW = np.dot(self.x.T, dout)
-        self.grads[0][...] = dW
-        return dx
+    for idx in range(window_size, len(corpus) - window_size):
+        cs = []
+        for t in range(-window_size, window_size + 1):
+            if t == 0:
+                continue
+            cs.append(corpus[idx + t])
+        contexts.append(cs)
+    return np.array(contexts), np.array(target)
